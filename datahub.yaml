@@ -1,0 +1,1293 @@
+openapi: 3.0.1
+info:
+  title: 'Data Hub API'
+  description: "This is the API description for the Data Hub. With these APIs, you can register and un-register your services in the Data Hub."
+  termsOfService: '#'
+  contact:
+    email: PlatformCore@mendix.com
+  version: 2.0.0
+externalDocs:
+  description: 'Specification of this API'
+  url: 'https://platformcore.pages.rnd.mendix.com/datahub-spec'
+servers:
+  - url: 'http://localhost:8080/rest/datahubservice/v1'
+  - url: 'https://hub-test.mendix.com/rest/datahubservice/v1'
+  - url: 'https://hub-ofdata.mendix.com/rest/datahubservice/v1'
+  - url: 'https://hub-ofperformance.mendix.com/rest/datahubservice/v1'
+  - url: 'https://hub-accp.mendix.com/rest/datahubservice/v1'
+  - url: 'https://hub.mendix.com/rest/datahubservice/v1'
+paths:
+  /data:
+    get:
+      tags:
+        - Search
+      summary: 'Search in Data Hub based on query string and filters'
+      parameters:
+      - in: query
+        name: "query"
+        schema:
+          type: string
+        description: 'The search term'
+      - in: query
+        name: productionEndpointsOnly
+        schema:
+          type: boolean
+        description: 'Boolean filter to only return Production endpoints. (Default: false.)'
+      - in: query
+        name: contractType
+        schema:
+          type: string
+        description: 'Protocol used by the service. Currently supported values: [OData_3_0, OData_4_0_Xml]. (Default: all.)'
+        example: 'OData_3_0' 
+        style: form
+        explode: false
+      - in: "query"
+        name: "afterId"
+        schema:
+          type: string
+        description: 'The UUID of the last endpoint on the previous page. (Defaults to the first page of results.)'
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: 'The maximum number of items that could be returned. (Defaults to 20, cannot be larger than 100.)'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+        '400':
+          description: 'Incorrect Input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: 'Authentication Failed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '410':
+          description: 'Unsupported Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error410'
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+      
+  /applications:
+    post:
+      tags:
+        - Register
+      summary: 'Register an application to the Data Hub'
+      requestBody:
+        description: 'Description of the application'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationBase'
+        required: true
+      responses:
+        '201':
+          description: 'Created'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: Location at which the newly created resource can be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationResponse'
+        '400':
+          description: 'Incorrect Input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: 'Authentication Failed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '410':
+          description: 'Unsupported Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error410'
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  "/applications/{AppUUID}/environments":
+    post:
+      tags:
+        - Register
+      summary: 'Register an environment for the specified appliation to Data Hub'
+      parameters:
+      - in: "path"
+        name: "AppUUID"
+        required: true
+        schema:
+            type: string
+      requestBody:
+        description: 'Description of the environment'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvironmentBase'
+        required: true
+      responses:
+        '201':
+          description: 'Created'
+          headers:  
+            Location:
+              schema:
+                type: string
+              description: Location at which the newly created resource can be found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '400':
+          description: 'Incorrect Input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: 'Authentication Failed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'Not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '409':
+          description: 'Conflict'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error409'
+        '410':
+          description: 'Unsupported Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error410'
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+    delete:
+      tags:
+      - "Register"
+      summary: "[NOT_IMPLEMENTED_YET] De-Register all the services of an app on specified environment from Data Hub"
+      description: ""
+      parameters:
+      - in: "path"
+        name: "AppUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "EnvironmentUUID"
+        schema:
+            type: string
+        required: true
+      responses:
+        '204':
+          description: 'De-Registered'
+        '400':
+          description: 'Incorrect Input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: 'Authentication Failed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'Not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '410':
+          description: 'Unsupported Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error410'
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'            
+  "/applications/{AppUUID}/environments/services":
+    put:
+      tags:
+      - "Register"
+      summary: "Registers all published and consumed services for the specified environment."
+      parameters:
+      - in: "path"
+        name: "AppUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "EnvironmentUUID"
+        schema:
+            type: string
+        required: true
+      requestBody:
+        description: 'Description of the services'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicesPut'  
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicesPutResponse'
+        '400':
+          description: 'Incorrect Input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: 'Authentication Failed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'Not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '410':
+          description: 'Unsupported Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error410'
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+
+  "/applications/{AppUUID}/environments/{EnvironmentUUID}/services/{ServiceName}":
+    get:
+      tags:
+      - "Register"
+      summary: "[NOT_IMPLEMENTED_YET] Retrieve Service Info of an app from Data Hub. This includes all the versions"
+      description: ""
+      parameters:
+      - in: "path"
+        name: "AppUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "EnvironmentUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "ServiceName"
+        schema:
+            type: string
+        required: true
+      responses:
+        '200':
+          description: "OK"
+
+    delete:
+      tags:
+      - "Register"
+      summary: "[NOT_IMPLEMENTED_YET] De-Register all the services of an app on specified environment with the given name from Data Hub. This De-Register all the versions of the service"
+      description: ""
+      parameters:
+      - in: "path"
+        name: "AppUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "EnvironmentUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "ServiceName"
+        schema:
+            type: string
+        required: true
+      responses:
+        '204':
+          description: 'De-Registered'
+        '400':
+          description: 'Incorrect Input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: 'Authentication Failed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'Not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '410':
+          description: 'Unsupported Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error410'
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  "/applications/{AppUUID}/environments/{EnvironmentUUID}/services/{ServiceName}/{ServiceVersion}":
+    get:
+      tags:
+      - "Register"
+      summary: "Retrieve detailed information on a specific version of a service from Data Hub."
+      description: ""
+      parameters:
+      - in: "path"
+        name: "AppUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "EnvironmentUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "ServiceName"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "ServiceVersion"
+        schema:
+            type: string
+        required: true
+      responses:
+        '200':
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetServiceVersionResponse'
+        '400':
+          description: 'Incorrect Input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: 'Authentication Failed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'Not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '410':
+          description: 'Unsupported Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error410'
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+    delete:
+      tags:
+      - "Register"
+      summary: "Delete specific service version for specified environment from Data Hub"
+      description: ""
+      parameters:
+      - in: "path"
+        name: "AppUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "EnvironmentUUID"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "ServiceName"
+        schema:
+            type: string
+        required: true
+      - in: "path"
+        name: "ServiceVersion"
+        schema:
+            type: string
+        required: true
+      responses:
+        '204':
+          description: 'De-Registered'
+        '400':
+          description: 'Invalid input'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        '401':
+          description: 'Authentication Failed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '403':
+          description: 'Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        '404':
+          description: 'Not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '410':
+          description: 'Unsupported Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error410'
+        '500':
+          description: 'Internal Server Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+
+components:
+  schemas:
+    ApplicationBase:
+      required:
+        - Name
+      properties:
+        Name:
+          type: string
+          example: 'Demo application'
+          description: 'Name of the application'
+        Description:
+          type: string
+          example: 'This is a demo application used to show off new functionality.'
+          description: 'Description of the application'
+        RepositoryLocation:
+          type: string
+          example: 'https://teamserver.sprintr.com/e0fb450a-203f-3e0a-ae3c-9cadaea00743'
+          description: 'Location of the development repository of the application'
+        Type:
+          type: string
+          enum: [Mendix, Teamcenter, Other]
+          example: 'Mendix'
+          description: 'Type of the application, possible values are "Mendix", "Teamcenter" and "Other" (Default)'
+        BusinessOwner:
+          type: object
+          description: 'Business owner of the application'
+          $ref: '#/components/schemas/ContactDetails'
+        TechnicalOwner:
+          type: object
+          description: 'Technical owner of the application'
+          $ref: '#/components/schemas/ContactDetails'
+    ContactDetails:
+          type: object
+          required:
+          - FirstName
+          - LastName
+          - Email
+          properties:
+            FirstName: 
+              type: string
+              example: 'Stan'
+              description: 'First name of the technical or business owner'
+            LastName:
+              type: string
+              example: 'Raine'
+              description: 'Last name of the technical or business owner'
+            Email: 
+              type: string
+              example: 'Stan@Raine.com'
+              description: 'Email of the technical or business owner'
+    ApplicationResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApplicationBase'
+        - type: object
+          required:
+            - UUID
+          properties:
+            UUID:
+              type: string
+              example: 'cfc36b98-7409-4384-b71d-f003b0c2f84b'
+              description: 'UUID that uniquely identifies the application.'
+    EnvironmentBase:
+      type: object
+      required: 
+        - Name
+        - Location
+      properties:
+        Name:
+          type: string
+          example: 'Test'
+          description: 'Name of the environment.'
+        Location:
+          type: string
+          example: 'https://sprintr.home.mendix.com/'
+          description: 'Location of the environment.'
+        Type:
+          type: string
+          example: 'Production'
+          description: 'Value for the environment type, allowed values are: Production, Non-Production, Sandbox. Default value is Non-Production.'
+        CustomLocations:
+          type: array
+          description: 'List of custom locations at which this environment can also be reached.'
+          items:
+            type: string
+            example: 'https://demo.com'
+    EnvironmentResponse:
+      allOf:
+        - $ref: '#/components/schemas/EnvironmentBase'
+        - type: object
+          required:
+            - UUID
+            - Application
+          properties:
+            UUID: 
+              type: string
+              example: '57e214d1-d8b2-48fb-8ff3-d67932ae392b'
+              description: 'UUID uniquely identifying the environment'
+            Application:
+              $ref: '#/components/schemas/ApplicationResponse'
+              
+    ServiceBase:
+      type: object
+      required: 
+        - Name
+        - ContractType
+      properties:
+        Name:
+          type: string
+          example: 'com.northwind.contacts'
+          description: 'Name of the service. This is the key by which a service is identified within an environment. Changing the name will cause it to be considered a new service.'
+        ContractType:
+          type: string
+          description: 'Protocol used by the service. Currently supported values: OData_3_0, OData_4_0_Xml'
+          example: 'OData_3_0'
+    ServiceDetailsRequest:
+      allOf:
+        - $ref: '#/components/schemas/ServiceBase'
+        - type: object
+          required:
+            - Versions
+          properties:
+            Versions:
+              type: array
+              items:
+                $ref: '#/components/schemas/VersionRequest'
+    ServiceDetailsResponse:
+      allOf:
+        - $ref: '#/components/schemas/ServiceBase'
+        - type: object
+          required:
+            - UUID
+            - Versions
+          properties:
+            UUID:
+              type: string
+              description: 'UUID uniquely identifying the service'
+              example: '4f68596a-7bd3-4f31-b8d7-a9e1344e7b60'
+            Versions:
+              type: array
+              items:
+                $ref: '#/components/schemas/VersionResponse'
+    VersionRequest:
+      type: object
+      required:
+        - VersionText
+        - Location
+        - Contracts
+      properties:
+        VersionText:
+          type: string
+          example: 1.0.0
+          description: 'Version number for the service version. This is the key by which a version is identified within a service.'
+        Location:
+          type: string
+          example: '/odata/v1/contacts'
+          description: "Location of the service version, relative to the environment's location."
+        Contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contract'
+    VersionResponse:
+      type: object
+      required:
+        - VersionText
+        - UUID
+        - Path
+        - PublishedOn
+      properties:
+        VersionText:
+          type: string
+          example: '1.0.0'
+        UUID:
+          type: string
+          example: '50872574-784e-4d91-bdfa-a4577b821309'
+        Path:
+          type: string
+          description: "Location of the service relative to the Environment's Location."
+          example: '/odata/v1/contacts'
+        PublishedOn:
+          type: string
+          example: '2019-01-01T15:22:58.981Z'              
+    ServicesPut:
+      type: object
+      properties:
+        PublishedServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDetailsRequest'
+        ConsumedServices:
+          type: array
+          description: "This array of objects can be empty, but if an object is provided then all its attributes are required"
+          items:
+            type: object
+            required:
+              - Name
+              - VersionText
+              - AppUUID
+              - EnvironmentUUID
+            properties:
+              Name:
+                type: string
+                example: "EmployeeContacts"
+              VersionText:
+                type: string
+                example: "1.0.0"
+              AppUUID:
+                type: string
+                example: "72b435dc-b9c6-4f46-aebe-76224052a3df"
+              EnvironmentUUID:
+                type: string
+                example: "45b435dc-b9c6-4f46-aebe-76224052a3df"
+              ConsumedItems:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                      example: 'MaterialDTO'
+                      description: "Empty array here means that all entities are being consumed. If only specific entities are consumed then this array will have objects with key:value pairs as in the example." 
+    ServicesPutResponse:
+      type: object
+      required:
+        - PublishedServices
+      properties:
+        PublishedServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDetailsResponse'
+    SearchResults:
+      type: object
+      required:
+          - Data
+          - Links
+          - Limit
+          - TotalResults
+      properties:
+        Data:
+          type: array
+          items:
+            type: object
+            required:
+              - UUID
+              - Name
+              - Version
+              - ContractType
+              - Connections
+              - LastUpdated
+              - SecurityClassification
+              - SecurityScheme
+              - Environment
+              - Application
+              - Tags
+              - TotalItems
+              - Items
+              - Links
+            properties:
+              UUID:
+                type: string
+                description: UUID of the endpoint
+                example: "7e4c1fde-b63f-4121-a71f-f1fc47c34fbc"
+              Name:
+                type: string
+                description: Name of the service published at the endpoint
+                example: SpecificationFull
+              Version:
+                type: string
+                description: Version of the service published by the endpoint
+                example: 2.9.3
+              ContractType:
+                type: string
+                description: 'Protocol used by the service. Currently supported values: OData_3_0, OData_4_0_Xml'
+                example: 'OData_3_0'
+              MinimumMxVersion:
+                type: string
+                description: Minimum Mx version required to use this service
+                example: "8.7.0"
+              MinimumRecommendedMxVersion:
+                type: string
+                description: Minimum Mx version suggested to use the full features of this service/endpoint
+                example: "8.9.0"
+              Description:
+                type: string
+                description: Description of the service published by the endpoint.
+                example: Retrieve the material information for a formula on the Formulation workbench
+              Connections:
+                type: integer
+                description: Number of environments consuming this
+                example: 42
+              LastUpdated:
+                type: string
+                description: UTC timestamp of the most recent update to the service
+                example: '2019-01-01T15:22:58.981Z'
+              SecurityClassification:
+                type: string
+                description: The restrictions for this service, string values rather than enum for flexibility; Public, Internal (restricted to company), or Confidential (restricted within company)
+                example: Internal
+              SecurityScheme:
+                type: object
+                required:
+                  - Types
+                properties: 
+                  Types: 
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SecurityType'
+                  MxAllowedRoles:
+                    type: array
+                    description: The roles that can access this endpoint in a Mendix application
+                    items:
+                      $ref: '#/components/schemas/MxAllowedRole'
+              Environment: 
+                type: object
+                required:
+                  - Name
+                  - Location
+                  - Type
+                  - UUID
+                properties:
+                  Name:
+                    type: string
+                    description: Name of the environment
+                    example: "Production-EU"
+                  Location: 
+                    type: string
+                    description: The URL of the environment
+                    example: 'http://coffeeipsum.com/'
+                  Type:
+                    type: string
+                    enum: [Production, Non-Production, Sandbox]
+                    description: Values of this enum can be "Production", "Non-Production" or "Sandbox"
+                    example: 'Non-Production'
+                  UUID:
+                    type: string
+                    description: UUID of the environment
+                    example: '084d5f77-78e5-482c-aca0-6f2e03fcef00'
+              Application: 
+                type: object
+                required:
+                  - Name
+                  - UUID
+                  - Type
+                  - Icon
+                properties:
+                  Name:
+                    type: string
+                    description: Name of the application
+                    example: "MendixApp"
+                  UUID: 
+                    type: string
+                    description: The UUID of the application
+                    example: '04989324-8a86-495b-b2d0-baf491ce6ff5'
+                  Type:
+                    type: string
+                    description: Type of application; currently Mendix, Teamcenter, or Other
+                    example: Mendix
+                  Description: 
+                    type: string
+                    description: A short description of the application
+                    example: 'This project was created to capture user information.'
+                  Icon:
+                    type: string
+                    description: URL of the icon location
+                    example: 'https://cdn.mendix.com/image.png'
+                  RepositoryLocation: 
+                    type: string
+                    description: URL of the project repository
+                    example: 'https://sprintr.home.mendix.com/link/project/4cd61cbe-e8ab-45ee-9048-e47b672c7c31'
+                  BusinessOwner:
+                    type: object
+                    description: The business owner of the application
+                    $ref: '#/components/schemas/Owner'
+                  TechnicalOwner:
+                    type: object
+                    description: The technical owner of the application
+                    $ref: '#/components/schemas/Owner'
+              Tags: 
+                type: array
+                description: Tags on this endpoint
+                items:
+                  $ref: '#/components/schemas/Tag'
+              TotalItems:
+                type: integer
+                description: The full number of items (such as data sources) existing at this level
+                example: 17
+              Items:
+                type: array
+                description: List of items (such as data sources) at this endpoint relevant to the search query
+                items:
+                  $ref: '#/components/schemas/Item'
+              Links:
+                type: array
+                description: Catalog is a deeplink to the endpoint details page in the Catalog. Self is the URL with the endpoint details, including contracts.
+                items:
+                  $ref: '#/components/schemas/Link'
+        Links:
+          type: array
+          description: Pagination links. 'First' provides the URL to the first page of results, 'Current' provides a URL to the current page of results, 'Next' provides URL to the next page of results.
+          items:
+            $ref: '#/components/schemas/Link'
+        Limit:
+         type: integer
+         description: Limit of this request. 
+         example: 10
+        LastId:
+          type: string
+          description: UUID of the last item returned in the Data array
+          example: '940de3e8-2072-4bd8-a7b0-ae1917f28839'
+        TotalResults: 
+          type: integer
+          description: Total number of results matching the search query
+          example: 87
+    SecurityType:
+      description: Description of the supported security type
+      oneOf:
+        - $ref: '#/components/schemas/SecurityTypeBase'
+        - $ref: '#/components/schemas/SecurityTypeMxID'
+      discriminator:
+        propertyName: Name
+        mapping:
+          Basic: '#/components/schemas/SecurityTypeBase'
+          Anonymous: '#/components/schemas/SecurityTypeBase'
+          Session: '#/components/schemas/SecurityTypeBase'
+          MxID: '#/components/schemas/SecurityTypeMxID'
+    SecurityTypeMxID:
+      allOf:
+        - $ref: '#/components/schemas/SecurityTypeBase'
+        - type: object
+          properties:  
+            AppStoreModuleId:
+              type: string
+              description: The ID of the AppStore module that implements this security type
+              example: '93457'
+    SecurityTypeBase:
+      type: object
+      required:
+        - Name
+      properties:
+        Name:
+          type: string
+          description: The name of a security scheme
+          example: 'MxID'
+    MxAllowedRole: 
+      type: object
+      required:
+        - Name
+        - ID
+      properties:
+        Name: 
+          type: string
+          description: The name of the Mendix role
+          example: "Curator"
+        ID:
+          type: string
+          example: '04989324-8a86-495b-b2d0-baf491ce6ff5'
+    GetServicesForEnvironmentResponse:
+      type: object
+      required:
+          - EnvironmentLocation
+          - Services
+      properties:
+        EnvironmentLocation:
+          type: string
+          description: 'Location of the requested environment. This attribute name is not entirely consistent with the rest of the API, when we do decide we want to expose this publicly this should be PublishedInEnvironment object.'
+          example: 'https://sprintr.home.mendix.com'
+        Services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceDetailsResponse'
+    GetServiceVersionResponse:
+      type: object
+      required:
+        - VersionText
+        - PublishedOn
+        - Location
+        - Self
+        - DataHubLocation
+        - Service
+        - Contracts
+      properties:                  
+        VersionText:
+          type: string
+          description: Version of the downloaded service.
+          example: '3.1.1.2'
+        PublishedOn:
+          type: string
+          description: Date this specific version was published.
+          example: '2019-01-01T15:22:58.981Z'
+        Location:
+          type: string
+          description: Location at which the service version has been published.
+          example: 'https://myapp.com/odata/v1/contacts'
+        Service:
+          allOf:
+            - $ref: '#/components/schemas/ServiceBase'
+            - type: object
+              required:
+                - Links
+              properties:
+                Links: 
+                  type: array
+                  description: Will contain a DataHubLocation link indicating where you can see more details in the Data Hub using your browser and Self link for the serviceVersion you requested.
+                  items:
+                    $ref: '#/components/schemas/Link'
+        Contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contract'    
+    Contract:
+      type: object
+      required:
+        - Type
+        - Value
+      properties:
+        Type:
+          type: string
+          description: Type of contract described here. For OData, the accepted types are "ServiceFeed"  and  "Metadata".
+          example: 'ServiceFeed'
+        Value:
+          type: string
+          description: Contents of the contract.
+          example: '<?xml version=\"1.0\" encoding=\"utf-8\"?><edmx:Edmx Version=\"1.0\" xmlns:edmx=\"http://schemas.microsoft.com/ado/2007/06/edmx\">  <edmx:DataServices m:DataServiceVersion=\"3.0\" m:MaxDataServiceVersion=\"3.0\" xmlns:m=\"http://schemas.microsoft.com/ado/2007/08/dataservices/metadata\"><Schema Namespace=\"DefaultNamespace\" xmlns=\"http://schemas.microsoft.com/ado/2009/11/edm\"><EntityType Name=\"Entity\"><Key><PropertyRef Name=\"ID\" /></Key><Property Name=\"ID\" Type=\"Edm.Int64\" Nullable=\"false\" /><Property Name=\"Attribute\" Type=\"Edm.String\" /></EntityType><EntityContainer Name=\"ODataServiceEntities\" m:IsDefaultEntityContainer=\"true\"><EntitySet Name=\"Entities\" EntityType=\"DefaultNamespace.Entity\" /></EntityContainer></Schema></edmx:DataServices></edmx:Edmx>'
+        Includes:
+          type: array
+          description: List of contract documents which this contract includes (ie, depends upon).
+          items:
+            $ref: '#/components/schemas/IncludedContract'
+    IncludedContract:
+      type: object
+      required:
+        - Value
+      properties:
+        Value:
+          type: string
+          description: Contents of the included contract document.
+          example: '<?xml version=\"1.0\" encoding=\"UTF-8\"?><edmx:Edmx Version=\"4.0\" xmlns:edmx=\"http://docs.oasis-open.org/odata/ns/edmx\"><edmx:Reference Uri=\"http://localhost/CORE/v1/CsdlSchema.xml\"><edmx:Include Alias=\"CORE\" Namespace=\"CORE_SCHEMA_V_1_0\"/><edmx:Include Alias=\"FOUNDATION\" Namespace=\"FOUNDATION_SCHEMA_V_1_0\"/></edmx:Reference><edmx:DataServices><Schema xmlns=\"http://docs.oasis-open.org/odata/ns/edm\" Namespace=\"SUB_SCHEMA_V_1_0\"><EntityType Name=\"VendorPart\" BaseType=\"CORE_SCHEMA_V_1_0.Part\"><NavigationProperty Name=\"VendorReference\" Type=\"SUB_SCHEMA_V_1_0.Vendor\"></NavigationProperty></EntityType><EntityType Name=\"Vendor\"><Key><PropertyRef Name=\"ContactName\"/></Key><Property Name=\"Name\" Type=\"Edm.String\"></Property><Property Name=\"Description\" Type=\"Edm.String\"></Property><Property Name=\"Address\" Type=\"Edm.String\"></Property><Property Name=\"Phone\" Type=\"Edm.String\"></Property><Property Name=\"Email\" Type=\"Edm.String\"></Property><Property Name=\"ContactName\" Type=\"Edm.String\"></Property></EntityType><EntityContainer Name=\"SupplierCollaborationContainer\" Extends=\"CORE_SCHEMA_V_1_0.CORE_APA242_CONTAINER_1\"><EntitySet Name=\"VendorParts\" EntityType=\"SUB_SCHEMA_V_1_0.VendorPart\"><NavigationPropertyBinding Path=\"VendorReference\" Target=\"Vendors\"/></EntitySet><EntitySet Name=\"Vendors\" EntityType=\"SUB_SCHEMA_V_1_0.Vendor\"></EntitySet></EntityContainer></Schema></edmx:DataServices></edmx:Edmx>'
+    Item:
+      type: object
+      description: Details about a data source, attribute, association, etc.
+      allOf:
+        - $ref: '#/components/schemas/ItemBase'
+        - oneOf:
+          - $ref: '#/components/schemas/ItemAttribute'
+          - $ref: '#/components/schemas/ItemAssociation'
+          - $ref: '#/components/schemas/ItemDataSource'
+          discriminator:
+            propertyName: Type
+            mapping:
+              DataSource: '#/components/schemas/ItemDataSource'
+              Association: '#/components/schemas/ItemAssociation'
+              Attribute: '#/components/schemas/ItemAttribute'
+    ItemBase:
+      type: object
+      required:
+        - Name
+        - Type
+      properties:
+        Name: 
+          type: string
+          description: Name of the item
+          example: 'Employee_Car'
+        Type:
+          type: string
+          description: Currently one of DataSource, Attribute, Association
+          example: 'Attribute'
+    ItemAssociation:
+      type: object
+      required: 
+        - ReferencedDataSource
+        - Multiplicity
+      properties:
+        ReferencedDataSource: 
+          type: string
+          description: The associated entity
+          example: "Car"
+        Multiplicity: 
+          type: string
+          enum: ["0..1", "1", "*"]
+    ItemAttribute:
+      type: object
+      required:
+        - EdmxType
+      properties:
+        EdmxType:
+          type: string
+          description: The Edmx primitive type of the attribute
+          example: 'Edm.Int16'
+    ItemDataSource:
+      type: object
+      required:
+        - Links
+        - TotalItems
+        - Items
+      properties:
+        Links:
+          type: array
+          description: Deeplink to the detail page of the data source in the Catalog
+          items:
+            $ref: '#/components/schemas/Link'
+        TotalItems:
+          type: integer
+          description: The number of items in the array
+          example: 25
+        Items:
+          type: array
+          description: List of the attributes or associations belonging to this data source
+          items:
+            $ref: '#/components/schemas/Item'   
+    Owner:
+      type: object
+      required: 
+        - Name
+        - Email
+      properties:
+        Name: 
+          type: string
+          description: Name of the technical or business owner
+          example: Lisanna van Noorden
+        Email:
+          type: string
+          description: Email of the technical or business owner
+          example: lisanna.van.noorden@mendix.com
+    Tag:
+      type: object
+      description: A tag on this endpoint
+      required:
+        - Name
+      properties: 
+        Name: 
+          type: string
+          description: name of the tag
+          example: coffee
+    Link:
+      type: object
+      required:
+        - Rel
+        - Href
+      properties:
+        Rel:
+          type: string
+          description: 'Describes how the link relates to the object, see the specific array description to see what kinds of links to expect.'
+          example: 'Self'
+        Href:
+          type: string
+          description: Location of the link.
+          example: 'https://hub.mendix.com/rest/datahubservice/v1/applications/ab1a74cb-2f28-458c-801c-ea4ded75070f/environments/98704353-135d-4b76-a34e-75a466eda3cd/services/com.mendix.contacts'
+    Error400:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+        - type: object
+          properties:
+            code:
+              description: 'Code describing why the request failed.'
+              example: 'INVALID_REQUEST'
+            message:
+              description: 'Message detailing the reason why the request failed. A response with HTTP status 400 indicates (some of) the provided parameters with the request are invalid.'
+              example: 'Invalid input'
+    Error401:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+        - type: object
+          properties:
+            code:
+              description: 'Code describing why the request failed.'
+              example: 'UNAUTHORIZED'
+            message:
+              description: 'Message detailing the reason why the request failed. A response with HTTP status 401 indicates the provided means of authentication was not accepted.'
+              example: 'Credentials could not be authenticated.'
+    Error403:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+        - type: object
+          properties:
+            code:
+              description: 'Code describing why the request failed.'
+              example: 'FORBIDDEN'
+            message:
+              description: 'Message detailing the reason why the request failed. A response with HTTP status 403 indicates that the provided means of authentication does not give access to the requested resource.'
+              example: 'You do not have access to the requested resource.'
+    Error404:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+        - type: object
+          properties:
+            code:
+              description: 'Code describing why the request failed.'
+              example: 'NOT_FOUND'
+            message:
+              description: 'Message detailing the reason why the request failed. A response with HTTP status 404 indicates that the requested resource could not be found.'
+              example: 'Could not find the requested resource.'
+    Error409:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+        - type: object
+          properties:
+            code:
+              description: 'Code describing why the request failed.'
+              example: 'CONFLICT'
+            message:
+              description: 'Message detailing the reason why the request failed. A response with HTTP status 409 indicates a conflict with the data already existing in the Catalog.'
+              example: 'Another environment ({UUID}) already exists in your company with the provided location.'
+    Error410:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+        - type: object
+          properties:
+            code:
+              description: 'Code describing why the request failed.'
+              example: 'UNSUPPORTED_VERSION'
+            message:
+              description: 'Message detailing the reason why the request failed. A response with HTTP status 410 indicates that the requested operation is not supported by this version of the API'
+              example: 'This version of the API is no longer available.'
+    Error500:
+      allOf:
+        - $ref: '#/components/schemas/ErrorBase'
+        - type: object
+          properties:
+            code:
+              description: 'Code describing why the request failed.'
+              example: 'INTERNAL_SERVER_ERROR'
+            message:
+              description: 'Message detailing the reason why the request failed. A response with HTTP status 500 indicates that an unexpected error occurred while the server was processing the request. If the problem persists you should contact Mendix Support.'
+              example: 'An internal server error occurred.'
+    ErrorBase:
+      type: object 
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
